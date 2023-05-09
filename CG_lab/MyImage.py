@@ -174,15 +174,15 @@ class MyImage:
         return val
 
 # отрисовка линии между двумя точками (базовый способ)
-def line_1(x0: int, y0: int, x1: int, y1: int, img: MyImage, color: Tuple[int, int, int], point_num: int = 100):
+def simple_line(x0: int, y0: int, x1: int, y1: int, img: MyImage, color: Tuple[int, int, int], point_num: int = 100):
     t_arr = np.linspace(0, 1, point_num, endpoint=True)
     for t in t_arr:
         x = int(x0 * (1.0 - t) + x1 * t)
         y = int(y0 * (1.0 - t) + y1 * t)
         img.set_pixel(x, y, color)
 
-# улучшение line_1
-def line_2(x0: int, y0: int, x1: int, y1: int, img: MyImage, color: Tuple[int, int, int]):
+# улучшение simple_line
+def create_advanced_line(x0: int, y0: int, x1: int, y1: int, img: MyImage, color: Tuple[int, int, int]):
     for x in range(x0, x1 + 1):
         t = (x - x0) / (x1 - x0)
         y = int(y0 * (1.0 - t) + y1 * t)
@@ -197,8 +197,8 @@ def _correct_x_y(x0: int, y0: int, x1: int, y1: int, steep):
         y0, y1 = y1, y0
     return x0, y0, x1, y1
 
-# улучшение line_2
-def line_3(x0: int, y0: int, x1: int, y1: int, img: MyImage, color: Tuple[int, int, int]):
+# улучшение create_advanced_line
+def create_line_with_steep_without_error(x0: int, y0: int, x1: int, y1: int, img: MyImage, color: Tuple[int, int, int]):
     steep = abs(x1 - x0) < abs(y1 - y0)
     x0, y0, x1, y1 = _correct_x_y(x0, y0, x1, y1, steep)
     for x in range(x0, x1 + 1):
@@ -211,16 +211,15 @@ def line_3(x0: int, y0: int, x1: int, y1: int, img: MyImage, color: Tuple[int, i
 
 
 
-# улучшение line_3
-def line_4(x0: int, y0: int, x1: int, y1: int, img: MyImage, color: Tuple[int, int, int]):
+# улучшение create_line_with_steep_without_error
+def create_line_with_bresenham(x0: int, y0: int, x1: int, y1: int, img: MyImage, color: Tuple[int, int, int]):
     steep = abs(x1 - x0) < abs(y1 - y0)
     x0, y0, x1, y1 = _correct_x_y(x0, y0, x1, y1, steep)
     dx = x1 - x0
 
     if dx == 0:
         for y in range(y0, y1 + 1):
-            image[x0, y] = color
-        return image
+            img.set_pixel(x0, y, color)
 
     dy = y1 - y0
     derror = abs(dy) / dx
@@ -250,22 +249,22 @@ def test_lines():
         points_y.append(int(100 + 95 * sin(alpha * i)))
 
     for x, y in zip(points_x, points_y):
-        line_1(x_mid, y_mid, x, y, image, color, point_num=50)
+        simple_line(x_mid, y_mid, x, y, image, color, point_num=50)
     image.show('first method')
     image.clear()
 
     for x, y in zip(points_x, points_y):
-        line_2(x_mid, y_mid, x, y, image, color)
+        create_advanced_line(x_mid, y_mid, x, y, image, color)
     image.show('second method')
     image.clear()
 
     for x, y in zip(points_x, points_y):
-        line_3(x_mid, y_mid, x, y, image, color)
+        create_line_with_steep_without_error(x_mid, y_mid, x, y, image, color)
     image.show('third method')
     image.clear()
 
     for x, y in zip(points_x, points_y):
-        line_4(x_mid, y_mid, x, y, image, color)
+        create_line_with_bresenham(x_mid, y_mid, x, y, image, color)
     image.show('fourth method')
     image.clear()
 
@@ -338,9 +337,9 @@ def test_obj_model(file_path: str, prepare=None, model_name: str = 'Obj model'):
 
         if not (image.point_exist(x0, y0) or image.point_exist(x1, y1) or image.point_exist(x2, y2)):
             continue
-        line_4(x0, y0, x1, y1, image, color)
-        line_4(x0, y0, x2, y2, image, color)
-        line_4(x1, y1, x2, y2, image, color)
+        create_line_with_bresenham(x0, y0, x1, y1, image, color)
+        create_line_with_bresenham(x0, y0, x2, y2, image, color)
+        create_line_with_bresenham(x1, y1, x2, y2, image, color)
 
     image.show(f'{model_name} faces')
 
